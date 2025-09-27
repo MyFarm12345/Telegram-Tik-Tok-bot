@@ -2,15 +2,15 @@ import asyncio
 import requests
 import re
 import os
+import threading
+from flask import Flask
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command, CommandStart
 from aiogram.types import Message, BufferedInputFile
 import logging
 
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
@@ -19,6 +19,22 @@ dp = Dispatcher()
 
 # Флаг для логов
 logging_enabled = True
+
+# Flask приложение для HTTP сервера (для Render)
+app = Flask(__name__)
+
+
+@app.route('/')
+@app.route('/health')
+@app.route('/healthz')
+def health_check():
+    return "Telegram TikTok Bot is running! 🎬", 200
+
+
+def run_flask():
+    """Запуск Flask сервера в отдельном потоке"""
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 
 class TikTokDownloader:
@@ -78,7 +94,8 @@ class TikTokDownloader:
                         logger.info(f"Ответ API: {data}")
 
                     if data.get('code') == 0 and data.get('data'):
-                        video_url = data['data'].get(api['video_key']) or data['data'].get('play') or data['data'].get('video')
+                        video_url = data['data'].get(api['video_key']) or data['data'].get('play') or data['data'].get(
+                            'video')
                         if video_url:
                             return {
                                 'video_url': video_url,
@@ -184,8 +201,6 @@ async def handle_tiktok_url(message: Message):
         filename = f"tiktok_video.mp4"
         video_file = BufferedInputFile(video_bytes, filename=filename)
 
-
-
         await message.answer_video(
             video=video_file,
             parse_mode="Markdown"
@@ -218,6 +233,12 @@ async def main():
 
 if __name__ == "__main__":
     try:
+        # Запускаем Flask сервер в отдельном потоке
+        flask_thread = threading.Thread(target=run_flask, daemon=True)
+        flask_thread.start()
+        logger.info("Flask HTTP сервер запущен для Render")
+
+        # Запускаем основной бот
         asyncio.run(main())
     except KeyboardInterrupt:
         logger.info("Бот остановлен")
