@@ -17,10 +17,10 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Флаг для логов
+
 logging_enabled = True
 
-# Flask приложение для HTTP сервера (для Render)
+
 app = Flask(__name__)
 
 
@@ -161,7 +161,7 @@ async def log_control(message: Message):
         await message.answer("✅ Логи включены")
     elif option == "off":
         logging_enabled = False
-        logger.setLevel(logging.CRITICAL)  # скрываем всё кроме критических
+        logger.setLevel(logging.CRITICAL)  
         await message.answer("🚫 Логи выключены")
     else:
         await message.answer("⚠️ Используйте только `/log on` или `/log off`")
@@ -233,12 +233,13 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        # Запускаем Flask сервер в отдельном потоке
+        
         flask_thread = threading.Thread(target=run_flask, daemon=True)
         flask_thread.start()
         logger.info("Flask HTTP сервер запущен для Render")
 
-        # Запускаем основной бот
+       
         asyncio.run(main())
     except KeyboardInterrupt:
+
         logger.info("Бот остановлен")
