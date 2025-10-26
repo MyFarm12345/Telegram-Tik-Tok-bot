@@ -129,9 +129,9 @@ downloader = TikTokDownloader()
 @dp.message(CommandStart())
 async def start_command(message: Message):
     welcome_text = """
-🎬 **Tik-Tok video downloader Myfarm123**
+🎬 **Tik-Tok video downloader**
 
-Привет! Я бот @myfarm123 и я помогу
+Привет! Я бот @TikTokInstallMyFarmbot и я помогу
 скачать видео из TikTok без водяных знаков.
 
 
@@ -142,29 +142,6 @@ async def start_command(message: Message):
 Отправьте ссылку! 
     """
     await message.answer(welcome_text, parse_mode="Markdown")
-
-
-# ================= ЛОГИ =================
-@dp.message(Command("log"))
-async def log_control(message: Message):
-    global logging_enabled
-
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        await message.answer("⚙️ Использование: `/log on` или `/log off`", parse_mode="Markdown")
-        return
-
-    option = args[1].lower()
-    if option == "on":
-        logging_enabled = True
-        logger.setLevel(logging.INFO)
-        await message.answer("✅ Логи включены")
-    elif option == "off":
-        logging_enabled = False
-        logger.setLevel(logging.CRITICAL)  
-        await message.answer("🚫 Логи выключены")
-    else:
-        await message.answer("⚠️ Используйте только `/log on` или `/log off`")
 
 
 @dp.message(F.text.contains("tiktok.com") | F.text.contains("vm.tiktok.com") | F.text.contains("vt.tiktok.com"))
@@ -243,3 +220,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
 
         logger.info("Бот остановлен")
+
